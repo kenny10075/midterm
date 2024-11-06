@@ -1,160 +1,294 @@
-<?php include "../inc/dbinfo.inc"; ?>
-<html>
-<body>
-<h1>Sample page</h1>
 <?php
+// Start of PHP script
 
-  /* Connect to MySQL and select the database. */
-  $connection = mysqli_connect(DB_SERVER, DB_USERNAME, DB_PASSWORD);
+// Include error reporting for development (remove or comment out in production)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-  if (mysqli_connect_errno()) echo "Failed to connect to MySQL: " . mysqli_connect_error();
+// Include the database configuration file
+include "../inc/dbinfo.inc"; // This includes your database connection constants
 
-  $database = mysqli_select_db($connection, DB_DATABASE);
+/* Connect to MySQL and select the database */
+$connection = mysqli_connect(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_DATABASE);
 
-  /* Ensure that the EMPLOYEES table exists. */
-  VerifyEmployeesTable($connection, DB_DATABASE);
+if (mysqli_connect_errno()) {
+    echo "Failed to connect to MySQL: " . mysqli_connect_error();
+    exit();
+}
 
-  /* If input fields are populated, add a row to the EMPLOYEES table. */
-  if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (isset($_POST['NAME']) && isset($_POST['ADDRESS'])) {
-        $employee_name = htmlentities($_POST['NAME']);
-        $employee_address = htmlentities($_POST['ADDRESS']);
-        if (strlen($employee_name) || strlen($employee_address)) {
-            AddEmployee($connection, $employee_name, $employee_address);
+/* Ensure that the EMPLOYEES table exists */
+VerifyEmployeesTable($connection, DB_DATABASE);
+
+/* If input fields are populated, add a row to the EMPLOYEES table */
+$employee_name = isset($_POST['NAME']) ? htmlentities($_POST['NAME']) : '';
+$employee_address = isset($_POST['ADDRESS']) ? htmlentities($_POST['ADDRESS']) : '';
+
+if (!empty($employee_name) && !empty($employee_address)) {
+    AddEmployee($connection, $employee_name, $employee_address);
+}
+
+/* Close the database connection */
+mysqli_close($connection);
+
+/* Function to verify that the table exists, and create it if not */
+function VerifyEmployeesTable($connection, $dbName)
+{
+    if (!TableExists("EMPLOYEES", $connection, $dbName)) {
+        $query = "CREATE TABLE EMPLOYEES (
+            ID INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            NAME VARCHAR(50) NOT NULL,
+            ADDRESS VARCHAR(90) NOT NULL
+        )";
+
+        if (!mysqli_query($connection, $query)) {
+            echo "<p>Error creating table: " . mysqli_error($connection) . "</p>";
         }
-    } elseif (isset($_POST['delete_id'])) {
-        DeleteEmployee($connection, $_POST['delete_id']);
-    } elseif (isset($_POST['update_id']) && isset($_POST['update_name']) && isset($_POST['update_address'])) {
-        $update_id = htmlentities($_POST['update_id']);
-        $update_name = htmlentities($_POST['update_name']);
-        $update_address = htmlentities($_POST['update_address']);
-        UpdateEmployee($connection, $update_id, $update_name, $update_address);
     }
 }
-?>
 
-<!-- Input form -->
-<form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>" method="POST">
-  <table border="0">
-    <tr>
-      <td>NAME</td>
-      <td>ADDRESS</td>
-    </tr>
-    <tr>
-      <td>
-        <input type="text" name="NAME" maxlength="45" size="30" />
-      </td>
-      <td>
-        <input type="text" name="ADDRESS" maxlength="90" size="60" />
-      </td>
-      <td>
-        <input type="submit" value="Add Data" />
-      </td>
-    </tr>
-  </table>
-</form>
+/* Function to check if the table exists */
+function TableExists($tableName, $connection, $dbName)
+{
+    $tableName = mysqli_real_escape_string($connection, $tableName);
+    $dbName = mysqli_real_escape_string($connection, $dbName);
 
-<!-- Display table data. -->
-<table border="1" cellpadding="2" cellspacing="2">
-  <tr>
-    <td>ID</td>
-    <td>NAME</td>
-    <td>ADDRESS</td>
-    <td>ACTIONS</td>
-  </tr>
+    $query = "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = '$dbName' AND TABLE_NAME = '$tableName'";
+    $result = mysqli_query($connection, $query);
 
-<?php
+    return mysqli_num_rows($result) > 0;
+}
 
-$result = mysqli_query($connection, "SELECT * FROM EMPLOYEES");
-
-while($query_data = mysqli_fetch_row($result)) {
-  echo "<tr>";
-  echo "<form action='" . $_SERVER['SCRIPT_NAME'] . "' method='POST'>";
-  echo "<td>", $query_data[0], "</td>",
-       "<td><input type='text' name='update_name' value='" . $query_data[1] . "' /></td>",
-       "<td><input type='text' name='update_address' value='" . $query_data[2] . "' /></td>";
-  echo "<td>";
-  echo "<input type='hidden' name='update_id' value='" . $query_data[0] . "' />";
-  echo "<input type='submit' value='Update' />";
-  echo "</form>";
-
-  // Delete button
-  echo "<form action='" . $_SERVER['SCRIPT_NAME'] . "' method='POST' style='display:inline;'>";
-  echo "<input type='hidden' name='delete_id' value='" . $query_data[0] . "' />";
-  echo "<input type='submit' value='Delete' />";
-  echo "</form>";
-  echo "</td>";
-  echo "</tr>";
+/* Function to add an employee to the table */
+function AddEmployee($connection, $name, $address)
+{
+    // Use prepared statements for security
+    $query = "INSERT INTO EMPLOYEES (NAME, ADDRESS) VALUES (?, ?)";
+    $stmt = mysqli_prepare($connection, $query);
+    mysqli_stmt_bind_param($stmt, 'ss', $name, $address);
+    mysqli_stmt_execute($stmt);
+    if (mysqli_stmt_affected_rows($stmt) > 0) {
+        echo "<p>Employee added successfully!</p>";
+    } else {
+        echo "<p>Error adding employee data: " . mysqli_error($connection) . "</p>";
+    }
+    mysqli_stmt_close($stmt);
 }
 ?>
+<!DOCTYPE HTML>
+<!--
+    Forty by HTML5 UP
+    html5up.net | @ajlkn
+    Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+    <head>
+        <title>Landing - Forty by HTML5 UP</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+        <link rel="stylesheet" href="assets/css/main.css" />
+        <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+    </head>
+    <body class="is-preload">
 
-</table>
+        <!-- Wrapper -->
+            <div id="wrapper">
 
-<!-- Clean up. -->
-<?php
-  mysqli_free_result($result);
-  mysqli_close($connection);
-?>
+                <!-- Header -->
+                <!-- Note: The "styleN" class below should match that of the banner element. -->
+                    <header id="header" class="alt style2">
+                        <a href="index.html" class="logo"><strong>Forty</strong> <span>by HTML5 UP</span></a>
+                        <nav>
+                            <a href="#menu">Menu</a>
+                        </nav>
+                    </header>
 
-</body>
+                <!-- Menu -->
+                    <nav id="menu">
+                        <ul class="links">
+                            <li><a href="index.html">Home</a></li>
+                            <li><a href="landing.html">Landing</a></li>
+                            <li><a href="generic.html">Generic</a></li>
+                            <li><a href="elements.html">Elements</a></li>
+                        </ul>
+                        <ul class="actions stacked">
+                            <li><a href="#" class="button primary fit">Get Started</a></li>
+                            <li><a href="#" class="button fit">Log In</a></li>
+                        </ul>
+                    </nav>
+
+                <!-- Banner -->
+                <!-- Note: The "styleN" class below should match that of the header element. -->
+                    <section id="banner" class="style2">
+                        <div class="inner">
+                            <span class="image">
+                                <img src="images/pic07.jpg" alt="" />
+                            </span>
+                            <header class="major">
+                                <h1>Landing</h1>
+                            </header>
+                            <div class="content">
+                                <p>Lorem ipsum dolor sit amet nullam consequat<br />
+                                sed veroeros. tempus adipiscing nulla.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                <!-- Main -->
+                    <div id="main">
+
+                        <!-- One -->
+                            <section id="one">
+                                <div class="inner">
+                                    <header class="major">
+                                        <h2>Sed amet aliquam</h2>
+                                    </header>
+                                    <p>Nullam et orci eu lorem consequat tincidunt vivamus et sagittis magna sed nunc rhoncus condimentum sem.</p>
+                                </div>
+                            </section>
+
+                        <!-- Two -->
+                            <section id="two" class="spotlights">
+                                <section>
+                                    <a href="generic.html" class="image">
+                                        <img src="images/pic08.jpg" alt="" data-position="center center" />
+                                    </a>
+                                    <div class="content">
+                                        <div class="inner">
+                                            <header class="major">
+                                                <h3>Orci maecenas</h3>
+                                            </header>
+                                            <p>Nullam et orci eu lorem consequat tincidunt vivamus et sagittis magna sed nunc rhoncus condimentum sem.</p>
+                                            <ul class="actions">
+                                                <li><a href="generic.html" class="button">Learn more</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </section>
+                                <section>
+                                    <a href="generic.html" class="image">
+                                        <img src="images/pic09.jpg" alt="" data-position="top center" />
+                                    </a>
+                                    <div class="content">
+                                        <div class="inner">
+                                            <header class="major">
+                                                <h3>Rhoncus magna</h3>
+                                            </header>
+                                            <p>Nullam et orci eu lorem consequat tincidunt vivamus et sagittis magna sed nunc rhoncus condimentum sem.</p>
+                                            <ul class="actions">
+                                                <li><a href="generic.html" class="button">Learn more</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </section>
+                                <section>
+                                    <a href="generic.html" class="image">
+                                        <img src="images/pic10.jpg" alt="" data-position="25% 25%" />
+                                    </a>
+                                    <div class="content">
+                                        <div class="inner">
+                                            <header class="major">
+                                                <h3>Sed nunc ligula</h3>
+                                            </header>
+                                            <p>Nullam et orci eu lorem consequat tincidunt vivamus et sagittis magna sed nunc rhoncus condimentum sem.</p>
+                                            <ul class="actions">
+                                                <li><a href="generic.html" class="button">Learn more</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </section>
+                            </section>
+
+                        <!-- Three -->
+                            <section id="three">
+                                <div class="inner">
+                                    <header class="major">
+                                        <h2>Massa libero</h2>
+                                    </header>
+                                    <p>Nullam et orci eu lorem consequat tincidunt vivamus et sagittis libero.</p>
+                                    <ul class="actions">
+                                        <li><a href="generic.html" class="button next">Get Started</a></li>
+                                    </ul>
+                                </div>
+                            </section>
+
+                    </div>
+
+                <!-- Contact -->
+                    <section id="contact">
+                        <div class="inner">
+                            <section>
+                                <!-- Updated form -->
+                                <form method="post" action="">
+                                    <div class="fields">
+                                        <div class="field half">
+                                            <label for="NAME">Name</label>
+                                            <input type="text" name="NAME" id="NAME" required />
+                                        </div>
+                                        <div class="field half">
+                                            <label for="ADDRESS">Address</label>
+                                            <input type="text" name="ADDRESS" id="ADDRESS" required />
+                                        </div>
+                                    </div>
+                                    <ul class="actions">
+                                        <li><input type="submit" value="Add Employee" class="primary" /></li>
+                                        <li><input type="reset" value="Clear" /></li>
+                                    </ul>
+                                </form>
+                            </section>
+                            <section class="split">
+                                <section>
+                                    <div class="contact-method">
+                                        <span class="icon solid alt fa-envelope"></span>
+                                        <h3>Email</h3>
+                                        <a href="#">information@untitled.tld</a>
+                                    </div>
+                                </section>
+                                <section>
+                                    <div class="contact-method">
+                                        <span class="icon solid alt fa-phone"></span>
+                                        <h3>Phone</h3>
+                                        <span>(000) 000-0000 x12387</span>
+                                    </div>
+                                </section>
+                                <section>
+                                    <div class="contact-method">
+                                        <span class="icon solid alt fa-home"></span>
+                                        <h3>Address</h3>
+                                        <span>1234 Somewhere Road #5432<br />
+                                        Nashville, TN 00000<br />
+                                        United States of America</span>
+                                    </div>
+                                </section>
+                            </section>
+                        </div>
+                    </section>
+
+                <!-- Footer -->
+                    <footer id="footer">
+                        <div class="inner">
+                            <ul class="icons">
+                                <li><a href="#" class="icon brands alt fa-twitter"><span class="label">Twitter</span></a></li>
+                                <li><a href="#" class="icon brands alt fa-facebook-f"><span class="label">Facebook</span></a></li>
+                                <li><a href="#" class="icon brands alt fa-instagram"><span class="label">Instagram</span></a></li>
+                                <li><a href="#" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
+                                <li><a href="#" class="icon brands alt fa-linkedin-in"><span class="label">LinkedIn</span></a></li>
+                            </ul>
+                            <ul class="copyright">
+                                <li>&copy; Untitled</li><li>Design: <a href="https://html5up.net">HTML5 UP</a></li>
+                            </ul>
+                        </div>
+                    </footer>
+
+            </div>
+
+        <!-- Scripts -->
+            <script src="assets/js/jquery.min.js"></script>
+            <script src="assets/js/jquery.scrolly.min.js"></script>
+            <script src="assets/js/jquery.scrollex.min.js"></script>
+            <script src="assets/js/browser.min.js"></script>
+            <script src="assets/js/breakpoints.min.js"></script>
+            <script src="assets/js/util.js"></script>
+            <script src="assets/js/main.js"></script>
+
+    </body>
 </html>
-
-<?php
-
-/* Add an employee to the table. */
-function AddEmployee($connection, $name, $address) {
-   $n = mysqli_real_escape_string($connection, $name);
-   $a = mysqli_real_escape_string($connection, $address);
-
-   $query = "INSERT INTO EMPLOYEES (NAME, ADDRESS) VALUES ('$n', '$a');";
-
-   if(!mysqli_query($connection, $query)) echo("<p>Error adding employee data.</p>");
-}
-
-/* Delete an employee from the table. */
-function DeleteEmployee($connection, $id) {
-   $id = mysqli_real_escape_string($connection, $id);
-
-   $query = "DELETE FROM EMPLOYEES WHERE ID='$id';";
-
-   if(!mysqli_query($connection, $query)) echo("<p>Error deleting employee data.</p>");
-}
-
-/* Update an employee in the table. */
-function UpdateEmployee($connection, $id, $name, $address) {
-    $id = mysqli_real_escape_string($connection, $id);
-    $n = mysqli_real_escape_string($connection, $name);
-    $a = mysqli_real_escape_string($connection, $address);
-
-    $query = "UPDATE EMPLOYEES SET NAME='$n', ADDRESS='$a' WHERE ID='$id';";
-
-    if(!mysqli_query($connection, $query)) echo("<p>Error updating employee data.</p>");
-}
-
-/* Check whether the table exists and, if not, create it. */
-function VerifyEmployeesTable($connection, $dbName) {
-  if(!TableExists("EMPLOYEES", $connection, $dbName))
-  {
-     $query = "CREATE TABLE EMPLOYEES (
-         ID int(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-         NAME VARCHAR(45),
-         ADDRESS VARCHAR(90)
-       )";
-
-     if(!mysqli_query($connection, $query)) echo("<p>Error creating table.</p>");
-  }
-}
-
-/* Check for the existence of a table. */
-function TableExists($tableName, $connection, $dbName) {
-  $t = mysqli_real_escape_string($connection, $tableName);
-  $d = mysqli_real_escape_string($connection, $dbName);
-
-  $checktable = mysqli_query($connection,
-      "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_NAME = '$t' AND TABLE_SCHEMA = '$d'");
-
-  if(mysqli_num_rows($checktable) > 0) return true;
-
-  return false;
-}
-?>
