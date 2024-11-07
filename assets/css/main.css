@@ -3950,3 +3950,26 @@ input, select, textarea {
 			opacity: 1;
 			visibility: visible;
 		}
+#contact table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1em;
+}
+
+#contact table th, #contact table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+#contact table th {
+    background-color: #f2f2f2;
+    text-align: left;
+}
+
+#contact table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#contact table tr:hover {
+    background-color: #ddd;
+}
