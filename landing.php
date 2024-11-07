@@ -138,57 +138,7 @@ function GetEmployeeList($connection)
                         </ul>
                     </nav>
 
-                <!-- 横幅 -->
-                <!-- 注意：下面的“styleN”类应与头部元素的类匹配。 -->
-                    <section id="banner" class="style2">
-                        <div class="inner">
-                            <span class="image">
-                                <img src="images/pic07.jpg" alt="" />
-                            </span>
-                            <header class="major">
-                                <h1>登陆页</h1>
-                            </header>
-                            <div class="content">
-                                <p>欢迎来到我们的登陆页<br />
-                                请随意浏览。</p>
-                            </div>
-                        </div>
-                    </section>
-
-                <!-- 主体 -->
-                    <div id="main">
-
-                        <!-- 第一部分 -->
-                            <section id="one">
-                                <div class="inner">
-                                    <header class="major">
-                                        <h2>关于我们</h2>
-                                    </header>
-                                    <p>我们致力于提供最优质的服务，满足您的需求。我们的团队由经验丰富的专业人士组成，确保为您提供最佳的解决方案。</p>
-                                </div>
-                            </section>
-
-                        <!-- 第二部分 -->
-                            <section id="two" class="spotlights">
-                                <section>
-                                    <a href="generic.html" class="image">
-                                        <img src="images/pic08.jpg" alt="" data-position="center center" />
-                                    </a>
-                                    <div class="content">
-                                        <div class="inner">
-                                            <header class="major">
-                                                <h3>我们的服务</h3>
-                                            </header>
-                                            <p>我们提供广泛的服务，以满足各种需求。无论您需要什么，我们都能为您提供定制的解决方案。</p>
-                                            <ul class="actions">
-                                                <li><a href="generic.html" class="button">了解更多</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </section>
-                              
-                            </section>
-
+               
                        
 
                     </div>
