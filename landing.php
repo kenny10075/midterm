@@ -186,52 +186,10 @@ function GetEmployeeList($connection)
                                         </div>
                                     </div>
                                 </section>
-                                <section>
-                                    <a href="generic.html" class="image">
-                                        <img src="images/pic09.jpg" alt="" data-position="top center" />
-                                    </a>
-                                    <div class="content">
-                                        <div class="inner">
-                                            <header class="major">
-                                                <h3>我们的团队</h3>
-                                            </header>
-                                            <p>我们的团队由一群充满激情和经验丰富的专业人士组成，致力于为客户提供卓越的服务。</p>
-                                            <ul class="actions">
-                                                <li><a href="generic.html" class="button">了解更多</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </section>
-                                <section>
-                                    <a href="generic.html" class="image">
-                                        <img src="images/pic10.jpg" alt="" data-position="25% 25%" />
-                                    </a>
-                                    <div class="content">
-                                        <div class="inner">
-                                            <header class="major">
-                                                <h3>联系我们</h3>
-                                            </header>
-                                            <p>如果您有任何问题或需要更多信息，请随时与我们联系。我们很乐意帮助您。</p>
-                                            <ul class="actions">
-                                                <li><a href="generic.html" class="button">了解更多</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </section>
+                              
                             </section>
 
-                        <!-- 第三部分 -->
-                            <section id="three">
-                                <div class="inner">
-                                    <header class="major">
-                                        <h2>开始您的旅程</h2>
-                                    </header>
-                                    <p>现在就加入我们，体验我们的优质服务。我们期待与您的合作，共创美好未来。</p>
-                                    <ul class="actions">
-                                        <li><a href="generic.html" class="button next">立即开始</a></li>
-                                    </ul>
-                                </div>
-                            </section>
+                       
 
                     </div>
 
